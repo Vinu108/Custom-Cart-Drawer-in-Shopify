@@ -1,0 +1,17 @@
+{% render 'cart_drawer_snippet' %}
+
+{% schema %}
+{
+"name":"Custom Cart Drawer",
+"settings": [
+  
+
+],
+"presets": [
+    {
+    "name":"Custom Cart Drawer"
+    }
+]
+
+}
+{% endschema %}
