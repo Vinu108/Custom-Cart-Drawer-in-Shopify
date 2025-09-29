@@ -1,0 +1,323 @@
+{% assign shippingPrice = settings.shippingPrice | plus: 0 %}
+{% assign discountPrice = settings.discount_price | plus: 0 %}
+
+{% assign cartPrice = cart.total_price | divided_by: 100 %}
+
+{% if shippingPrice > 0 and discountPrice > 0 %}
+  {% if shippingPrice < discountPrice %}
+    {% assign first_threshold = shippingPrice %}
+    {% assign second_threshold = discountPrice %}
+
+    {% assign first_label = settings.shippingLabel2 %}
+    {% assign second_label = settings.discountLabel2 %}
+
+    {% assign first_threshold_percentage = 100.0 | times: first_threshold | divided_by: second_threshold %}
+
+    {% assign second_threshold_percentage = 100.0 | times: second_threshold | divided_by: second_threshold %}
+
+  {% elsif shippingPrice > discountPrice %}
+    {% assign first_threshold = discountPrice %}
+    {% assign second_threshold = shippingPrice %}
+
+    {% assign first_label = settings.discountLabel2 %}
+    {% assign second_label = settings.shippingLabel2 %}
+
+    {% assign first_threshold_percentage = 100.0 | times: first_threshold | divided_by: second_threshold %}
+
+    {% assign second_threshold_percentage = 100.0 | times: second_threshold | divided_by: second_threshold %}
+  {% endif %}
+
+{% elsif shippingPrice == 0 or discountPrice == 0 %}
+  {% if shippingPrice == 0 %}
+    {% assign second_threshold = discountPrice %}
+    {% assign second_label = settings.discountLabel2 %}
+    {% assign second_threshold_percentage = 100.0 | times: second_threshold | divided_by: second_threshold %}
+  {% elsif discountPrice == 0 %}
+    {% assign second_threshold = shippingPrice %}
+    {% assign second_label = settings.shippingLabel2 %}
+    {% assign second_threshold_percentage = 100.0 | times: second_threshold | divided_by: second_threshold %}
+  {% endif %}
+{% endif %}
+
+{% assign shippingPrice = settings.shippingPrice2 | plus: 0 %}
+{% assign discountPrice = settings.discount_price2 | plus: 0 %}
+
+{% if shippingPrice > discountPrice %}
+  {% assign custom_shipping = second_threshold_percentage %}
+
+{% elsif shippingPrice < discountPrice %}
+  {% assign custom_discount = second_threshold_percentage %}
+{% endif %}
+
+{% assign remainigPriceFreeshiping = shippingPrice | minus: cartPrice %}
+{% assign remainigPriceDiscount = discountPrice | minus: cartPrice %}
+
+{% assign progress_percentage = 100.0 | times: cartPrice | divided_by: second_threshold %}
+{% if progress_percentage > 100 %}
+  {% assign progress_percentage = 100 %}
+{% endif %}
+
+
+<div class="custom_cart_drawer_shipping_bar{% if settings.shippingPrice == 0 and settings.discount_price == 0 %} hide__barr {% endif %}">
+  {% if shippingPrice > 0 or discountPrice > 0 %}
+    {% if shippingPrice < discountPrice %}
+      {% if cartPrice < shippingPrice %}
+        <p class="texttttttt" style="text-align:center; color: black;">
+         You're <span>{{ remainigPriceFreeshiping | times: 100.0 | money }}</span> away from <span class="colored_freeship"><span>{{ settings.shippingLabel2 }}</span></span>
+        </p>
+      {% elsif cartPrice >= shippingPrice and cartPrice < discountPrice %}
+        <p class="texttttttt" style="text-align:center; color: black;">
+          {% if settings.shippingLabel2 != blank %}
+            {{ settings.shippingLabel2 }} Unlocked!
+          {% endif %}
+          <br>
+          {{ remainigPriceDiscount | times: 100.0 | money }} remaining for {{ settings.diconntText2 }}.
+        </p>
+      {% elsif cartPrice >= discountPrice and cartPrice >= shippingPrice %}
+        <p style="text-align: center;">
+          {% if settings.shippingLabel != blank%}
+            You unlocked {{ settings.shippingLabel2 }}
+          {% endif %}
+          {% if settings.diconntText != blank and settings.shippingLabel != blank %} + {% endif -%}
+          {{- settings.diconntText }}.
+        </p>
+      {% endif %}
+    {% elsif discountPrice < shippingPrice %}
+      {% if cartPrice < discountPrice %}
+        <p class="texttttttt" style="text-align:center; color: black;">
+          {{ remainigPriceDiscount | times: 100.0 | money }} remaining for {{ settings.diconntText }}.
+        </p>
+      {% elsif cartPrice >= discountPrice and cartPrice < shippingPrice %}
+        <p class="texttttttt" style="text-align:center; color: black;">
+          {% if settings.diconntText2 != blank%}
+            {{ settings.diconntText2 }} Unlocked!
+          {% endif %}
+          {{ remainigPriceFreeshiping | times: 100.0 | money }} remaining for {{ settings.shippingLabel }}.
+        </p>
+      {% elsif cartPrice >= discountPrice and cartPrice >= shippingPrice %}
+        <p style="text-align: center;">
+          {% if settings.diconntText2 != blank %}
+            You unlocked {{ settings.diconntText2 }}
+          {% endif %}
+          {% if settings.shippingLabel2 != blank and settings.diconntText2 != blank %} + {% endif %}
+          {{ settings.shippingLabel2 }}.
+        </p>
+      {% endif %}
+    {% endif %}
+  {% endif %}
+
+  <div class="progress-wrap">
+    <div class="progress">
+      <div class="progress_fill" style="width: {{ progress_percentage }}%; transition: width 3s linear;"></div>
+    </div>
+    {% if shippingPrice > 0 %}
+      <div class="freeship_wrap">
+        <p class="free_ship_price">{{cart.currency.symbol}}{{ settings.shippingPrice2 }}</p>
+
+        <div class="free_ship"></div>
+        <p class="freeship_txt">{{ settings.shippingLabel2 }}</p>
+      </div>
+    {% endif %}
+    {% if discountPrice > 0 %}
+      <div class="discount-wrap">
+        <p class="discount_price_text">{{ cart.currency.symbol }}{{settings.discount_price2}}</p>
+        <div class="discccont"></div>
+        <p class="discount_txt">{{ settings.diconntText2 }}</p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<style>
+  .free-shipping-message{
+     position: absolute;
+     z-index: 11;
+     top: 50px;
+     left: 0
+  }
+      .custom_cart_drawer_shipping_bar{
+          width: 100%;
+          position: relative;
+          background: {{ settings.bgColor | default: '#EFF8EE' }};
+          padding: 21px 20px 1px;
+
+      }
+
+
+
+      .custom_cart_drawer_shipping_bar .colored_freeship{
+        color: #58B44E;
+        text-transform: uppercase;
+    }
+.custom_cart_drawer_shipping_bar p.texttttttt span {
+    color: #58B44E;
+    font-size: 14px;
+}
+p.texttttttt {
+    margin-bottom: 40px;
+}
+      .hide__barr{
+        display: none;
+      }
+
+       .custom_cart_drawer_shipping_bar .progress-wrap{
+        position: relative;
+        width:342px;
+      }
+
+
+      .custom_cart_drawer_shipping_barimg .congo_gif {
+        position: absolute;
+        top: 0;
+    }
+      .custom_cart_drawer_shipping_barp .texttttttt{
+        font-size: 14px;
+        font-family: "Poppins";
+        font-weight: 500;
+      }
+
+       .custom_cart_drawer_shipping_bar .progress {
+          background: rgb(143 142 142 / 10%);
+          border-radius: 12px;
+          align-items: center;
+          position: relative;
+          display: flex !important;
+          margin: 30px 0 60px;
+         overflow: hidden;
+         height: 5px;
+      }
+
+       .custom_cart_drawer_shipping_bar .progress_fill{
+          position:absolute;
+          content: '';
+          box-shadow: 0 10px 40px -10px #fff;
+          left: 0;
+          top: 0;
+          border-radius: 100px;
+          background:#58B44E;
+          height: 5px;
+          display: block !important;
+      }
+
+      .custom_cart_drawer_shipping_bar .freeship_wrap{
+         position: absolute;
+        top: 0px;
+        width: 100%;
+         {% if custom_shipping != blank %}
+      right: 0!important;
+       text-align: right;
+      {% else %}
+      left: {{ first_threshold_percentage }}%!important;
+       text-align: center;
+      {% endif %}
+      }
+
+
+     .custom_cart_drawer_shipping_bar .freeship_wrap .freeship_txt{
+           position: absolute;
+    max-width: 100%;
+    top: 24px;
+    font-size: 10px;
+    font-family: 'Poppins';
+    line-height: 14px;
+    left: -14px;
+    font-weight: 600;
+    text-align: center;
+         {% comment %} {% if custom_shipping != blank %}
+      right: 0!important;
+       text-align: right;
+      {% else %}
+      left: {{ first_threshold_percentage }}%!important;
+       text-align: center;
+      {% endif %} {% endcomment %}
+
+    }
+
+
+
+      .custom_cart_drawer_shipping_bar .discount-wrap{
+        position: absolute;
+        top: 0px;
+        width: 100%;
+      }
+
+
+
+      .custom_cart_drawer_shipping_bar .discount-wrap .discount_txt{
+         position: absolute;
+        max-width: 100%;
+        top: 24px;
+      font-size: 10px;
+          font-weight: 600;
+          
+       {% if custom_discount != blank %}
+      right: 0!important;
+      text-align: right;
+      {% else %}
+      left: {{ first_threshold_percentage }}%!important;
+      text-align: center;
+      {% endif %}
+      position:relative;
+      left:10px;
+      }
+
+      .custom_cart_drawer_shipping_bar .free_ship{
+      position: absolute;
+      {% comment %} {% if custom_shipping != blank %}
+      right: 0!important;
+      {% else %}
+      left: {{ first_threshold_percentage }}%!important;
+      {% endif %} {% endcomment %}
+      width: 37px;
+      height: 37px;
+         background-image: url(https://cdn.shopify.com/s/files/1/0688/5792/1699/files/Group_1707479733.png?v=1758750008);
+    display: block !important;
+
+    top: -17px;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+      
+  }
+  .custom_cart_drawer_shipping_bar .discccont{
+      position: absolute;
+      {% if custom_discount != blank %}
+      right: 0!important;
+      {% else %}
+      left: {{ first_threshold_percentage }}%!important;
+      {% endif %}
+      top: -17px;
+    width: 37px;
+    height: 37px;
+      display: block !important;
+       background-image: url(https://cdn.shopify.com/s/files/1/0688/5792/1699/files/Group_1707479734.png?v=1758750274);
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+
+
+  .custom_cart_drawer_shipping_bar p.free_ship_price {
+    position: absolute;
+    max-width: 100%;
+    top: -32px;
+    font-size: 10px;
+    font-family: 'Poppins';
+    line-height: 14px;
+    left: 3px;
+    font-weight: 600;
+    text-align: center;
+}
+
+.custom_cart_drawer_shipping_bar p.discount_price_text {
+    position: absolute;
+    max-width: 100%;
+    top: -32px;
+    font-size: 10px;
+    font-family: 'Poppins';
+    line-height: 14px;
+    right: 3px;
+    font-weight: 600;
+    text-align: center;
+}
+</style>
