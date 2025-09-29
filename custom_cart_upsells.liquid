@@ -1,0 +1,227 @@
+{% assign selected_products = settings.product_list %}
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+
+<div class="custom_cart_upsell">
+  <div class="custom_cart_upsell_inner">
+    <h3 class="upsell_title">{{ settings.title_upsell }}</h3>
+    <div class="swiper mySwiper">
+      <div class="custom_cart_upsell_wrapper swiper-wrapper">
+        {% for product in selected_products %}
+          <div class="swiper-slide">
+            <div class="upsell_product">
+              <div class="upsell_img">
+                <img
+                  src="{{ product.featured_image | img_url: 'master' }}"
+                  alt="{{ product.title }}"
+                  loading="lazy"
+                >
+              </div>
+              <div class="upsell_content">
+                <h3 class="upsell_product_title">{{ product.title }}</h3>
+                <div class="custom_upsell_product_btn_price">
+                  <div class="wrapper_upsell_price">
+                    <span class="upsell_compare_at_price">{{ product.compare_at_price | money }}</span>
+                    <span class="upsell_price">{{ product.price | money }}</span>
+                    {% if product.compare_at_price > product.price %}
+  {% assign discount_fraction = product.compare_at_price | minus: product.price %}
+  {% assign discount_fraction = discount_fraction | times: 100 %}
+  {% assign discount_percent = discount_fraction | divided_by: product.compare_at_price | floor %}
+  <span class="upsell_discount">{{ discount_percent }}% OFF</span>
+{% endif %}
+
+                  </div>
+                  <div class="btn_wrapper">
+{% assign variant = product.first_available_variant %}
+
+{% comment %}
+  Find how many of this variant are already in cart
+{% endcomment %}
+{% assign variant_in_cart = 0 %}
+{% for item in cart.items %}
+  {% if item.variant.id == variant.id %}
+    {% assign variant_in_cart = item.quantity %}
+  {% endif %}
+{% endfor %}
+                    <button class="upsell_add_to_cart  {% if variant.inventory_quantity <= variant_in_cart %}disabled_btn{% endif %}" var_id="{{ product.first_available_variant.id }}"
+ style="{% if product.variant.size < 1 %}pointer-events: none; opacity: 0.5;{% endif %}">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="52" height="52" viewBox="0 0 52 52" fill="none">
+                        <circle cx="26" cy="26" r="25.25" fill="white" stroke="#58B44E" stroke-width="1.5"/>
+                        <path fill-rule="evenodd" clip-rule="evenodd" d="M25.9732 16.0366C25.3619 16.0366 24.7757 16.2794 24.3434 16.7117C23.9112 17.1439 23.6684 17.7302 23.6684 18.3415V18.6017C24.0959 18.5982 24.5585 18.5969 25.0564 18.5976H26.8901C27.3886 18.5969 27.8513 18.5982 28.2781 18.6017V18.3415C28.2781 17.7302 28.0353 17.1439 27.603 16.7117C27.1708 16.2794 26.5845 16.0366 25.9732 16.0366ZM29.8147 18.656V18.3415C29.8147 17.3226 29.41 16.3456 28.6896 15.6251C27.9691 14.9047 26.992 14.5 25.9732 14.5C24.9544 14.5 23.9773 14.9047 23.2569 15.6251C22.5365 16.3456 22.1318 17.3226 22.1318 18.3415V18.656C21.9938 18.6655 21.8603 18.6775 21.7312 18.6918C20.8318 18.7891 20.0789 18.992 19.411 19.4499C19.1818 19.6082 18.966 19.785 18.7656 19.9784C18.1858 20.5439 17.8385 21.2425 17.5671 22.1051C17.3038 22.944 17.0907 24.0094 16.8224 25.3483L16.8029 25.4456C16.4177 27.3745 16.1135 28.8947 16.0264 30.1056C15.9363 31.343 16.0612 32.3828 16.6472 33.2853C16.8439 33.5871 17.0706 33.8637 17.3274 34.115C18.0977 34.8669 19.0934 35.1927 20.3237 35.3484C21.5284 35.5 23.0793 35.5 25.0462 35.5H26.9003C28.8682 35.5 30.4181 35.5 31.6227 35.3484C32.853 35.1927 33.8498 34.8669 34.6191 34.115C34.8754 33.8641 35.1035 33.5858 35.2993 33.2853C35.8852 32.3838 36.0102 31.343 35.9211 30.1056C35.833 28.8947 35.5298 27.3745 35.1425 25.4456L35.1241 25.3483C34.8567 24.0094 34.6426 22.944 34.3794 22.1051C34.1079 21.2425 33.7606 20.5439 33.1808 19.9784C32.9804 19.785 32.7646 19.6082 32.5355 19.4499C31.8676 18.992 31.1146 18.7891 30.2152 18.6918C30.0823 18.6775 29.9481 18.6655 29.8147 18.656ZM21.8962 20.2192C21.1309 20.3011 20.6587 20.4579 20.2797 20.717C20.1225 20.8252 19.9748 20.9465 19.8382 21.0797C19.5093 21.4003 19.2645 21.8326 19.033 22.566C18.7974 23.3169 18.5986 24.3003 18.321 25.6925C17.9215 27.688 17.6378 29.1139 17.5589 30.2162C17.48 31.3041 17.6122 31.9505 17.9359 32.4483C18.0697 32.6546 18.2247 32.8438 18.4009 33.0159C18.8261 33.4307 19.4335 33.6868 20.5163 33.8241C21.6124 33.9624 23.067 33.9634 25.1015 33.9634H26.846C28.8804 33.9634 30.333 33.9624 31.4302 33.8241C32.5129 33.6868 33.1204 33.4307 33.5455 33.0159C33.7207 32.8441 33.8766 32.6538 34.0106 32.4483C34.3343 31.9505 34.4664 31.3041 34.3886 30.2152C34.3087 29.1129 34.0249 27.688 33.6264 25.6925C33.3478 24.3003 33.1501 23.3159 32.9135 22.566C32.683 21.8326 32.4371 21.4003 32.1083 21.0797C31.973 20.9454 31.8256 20.824 31.6678 20.717C31.2888 20.4579 30.8155 20.3021 30.0503 20.2192C29.2687 20.1352 28.2648 20.1341 26.845 20.1341H25.1025C23.6827 20.1341 22.6788 20.1352 21.8962 20.2192ZM22.8191 27.8611C23.0112 27.7932 23.2224 27.8044 23.4062 27.8922C23.5901 27.98 23.7315 28.1372 23.7995 28.3293C23.9585 28.7787 24.253 29.1677 24.6422 29.4429C25.0315 29.718 25.4965 29.8658 25.9732 29.8658C26.4499 29.8658 26.9149 29.718 27.3042 29.4429C27.6935 29.1677 27.9879 28.7787 28.147 28.3293C28.1806 28.2341 28.2327 28.1465 28.3002 28.0714C28.3677 27.9963 28.4493 27.9353 28.5403 27.8918C28.6314 27.8483 28.7302 27.8231 28.831 27.8178C28.9318 27.8124 29.0327 27.827 29.1278 27.8606C29.223 27.8942 29.3106 27.9463 29.3857 28.0138C29.4608 28.0813 29.5218 28.1629 29.5653 28.254C29.6088 28.3451 29.634 28.4438 29.6393 28.5446C29.6447 28.6454 29.6301 28.7463 29.5965 28.8415C29.3316 29.5906 28.841 30.2393 28.1922 30.6981C27.5434 31.1568 26.7684 31.4032 25.9737 31.4032C25.1791 31.4032 24.404 31.1568 23.7553 30.6981C23.1065 30.2393 22.6158 29.5906 22.351 28.8415C22.2831 28.6494 22.2943 28.4382 22.3821 28.2544C22.4699 28.0705 22.6271 27.9291 22.8191 27.8611Z" fill="black"/>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+        .custom_cart_upsell .upsell_product {
+      display: grid
+  ;
+      grid-template-columns: 64px 1fr;
+      gap: 8.98px;
+      background: #ffffff;
+      padding: 7px;
+      border-radius: 3.79px;
+  }
+   .custom_cart_upsell button.upsell_add_to_cart {
+      background: transparent;
+      border: none;
+      padding: 0;
+      margin:5px 0 0 0;
+  }
+  .custom_cart_upsell .upsell_img {
+      height: 64px;
+      width: 64px;
+      border: 1px solid #ECECEC;
+      padding: 2px;
+      border-radius: 3.1px;
+  }
+   .custom_cart_upsell .upsell_img img {
+
+      height: 100%;
+      border-radius: 2.08px;
+  }
+.custom_cart_upsell span.upsell_discount {
+    position: absolute;
+    top: 0;
+    font-size: 7.59px;
+    background: #58B44E;
+    color: #fff;
+    font-family: Poppins;
+    right: 0;
+    padding: 3px 7px;
+    border-radius: 0px 5px;
+}
+.custom_cart_upsell .upsell_content {
+    padding-top: 14px;
+}
+  .custom_cart_upsell {
+      padding: 0px 20px 21px;
+  }
+
+  .custom_cart_upsell .custom_cart_upsell_inner {
+      padding: 10px;
+      background: #F3F3F3;
+      border-radius: 5px;
+  }
+
+
+  .custom_cart_upsell .wrapper_upsell_price {
+      display: flex
+  ;
+      flex-direction: column;
+      gap: 0;
+  }
+
+  .custom_upsell_product_btn_price {
+      display: flex
+  ;
+      gap: 10px;
+  }
+  .custom_cart_upsell span.upsell_price {
+      color: #58B44E;
+      font-size: 10.7px;
+      font-family: 'Poppins';
+      font-weight: 900;
+  }
+  .custom_cart_upsell span.upsell_compare_at_price {
+      font-size: 9.59px;
+      font-family: 'Poppins';
+      color: #B3B3B3;
+      margin: 3px 0px 0px;
+      text-decoration: line-through;
+  }
+  .custom_cart_upsell h3.upsell_product_title {
+      margin: 0;
+      color: #000000;
+      font-size: 9.7px;
+      font-family: 'Poppins';
+      font-weight: 600;
+      line-height: 14px;
+  }
+  button.upsell_add_to_cart svg {
+      height: 30px;
+      width: 30px;
+  }
+  button.upsell_add_to_cart{
+      cursor:pointer;
+  }
+
+  .custom_cart_upsell h3.upsell_title {
+      font-size: 14px;
+      color: #000000;
+      font-weight: 500;
+      margin: 0 0 8px 0px;
+      font-family: 'Poppins', sans-serif;
+  }
+</style>
+
+<script>
+  var swiper = new Swiper('.custom_cart_upsell .mySwiper', {
+    slidesPerView: 1.5,
+    spaceBetween: 7,
+    navigation: {
+      nextEl: '.swiper-button-next',
+      prevEl: '.swiper-button-prev',
+    },
+    loop: true, // Optional: makes the slider loop infinitely
+  }); 
+
+
+
+// Function to refresh cart drawer
+// Function to refresh cart drawer
+{% comment %} function refreshCartDrawer() {
+  fetch(window.location.pathname + "?sections=custom_cart_drawer")
+    .then(res => res.json())
+    .then(data => {
+      const parser = new DOMParser();
+      const html = parser.parseFromString(data["custom_cart_drawer"], "text/html");
+      const newDrawer = html.querySelector("custom-cart-drawer");
+      const oldDrawer = document.querySelector("custom-cart-drawer");
+
+      if (newDrawer && oldDrawer) {
+        oldDrawer.innerHTML = newDrawer.innerHTML;
+      }
+    })
+    .catch(err => console.error("Error refreshing cart drawer:", err));
+}
+
+// Listen for Shopify's cart events and refresh drawer
+document.addEventListener('cart:updated', () => {
+  refreshCartDrawer();
+});
+
+// Optional: If using a custom add to cart button
+document.querySelectorAll('.upsell_add_to_cart').forEach(button => {
+  button.addEventListener('click', async (e) => {
+    e.preventDefault();
+    const variantId = button.getAttribute('var_id');
+    if (!variantId) return;
+
+    try {
+      await fetch('/cart/add.js', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: variantId, quantity: 1 })
+      });
+
+      // Only refresh the cart drawer
+      refreshCartDrawer();
+    } catch (err) {
+      console.error('Error adding to cart:', err);
+    }
+  });
+}); {% endcomment %}
+
+
+
+</script>
